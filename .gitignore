@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+Dataset/
+TRACE_reproduction/
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.csv
+*.pdf

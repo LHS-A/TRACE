@@ -1,0 +1,61 @@
+project:
+  output_dir: TRACE_reproduction
+  mode: full
+data:
+  root: Dataset
+  # Required for full TRACE. CSV columns: path (or relative_path), patient_id,
+  # and the six biomarkers CD, AVG, SD, CV, MAX, 6A (aliases are accepted).
+  biomarker_csv: null
+  patient_id_column: patient_id
+  included_classes: [BK, CE, FECD, HC, ICE, PPCD]
+  excluded_classes: [Others]
+  input_size: 384
+  num_workers: 4
+  batch_size: 16
+  grad_accumulation: 2
+  cv_seed: 42
+  num_folds: 5
+model:
+  pretrained: true
+  # Required ResNet-50-compatible encoder initialization from ProtoCEC.
+  protocec_checkpoint: null
+  feature_dim: 1024
+  eas_hidden_dim: 256
+  pathology_prototypes_per_class: 10
+  biomarker_prototypes_per_class: 8
+  graph_hidden_dim: 256
+  graph_heads: 4
+  graph_layers: 2
+  dropout: 0.1
+  match_epsilon: 1.0e-6
+train:
+  encoder_epochs: 50
+  prototype_epochs: 50
+  graph_epochs: 100
+  patience: 10
+  backbone_lr: 1.0e-4
+  head_lr: 3.0e-4
+  graph_lr: 1.0e-3
+  weight_decay: 1.0e-4
+  warmup_epochs: 5
+  min_lr: 1.0e-6
+  grad_clip: 1.0
+  temperature: 0.07
+  lambda_bio: 0.2
+prototypes:
+  robust_epsilon: 1.0e-6
+  biomarker_max_iterations: 300
+  pathology_max_iterations: 100
+  pathology_tolerance: 1.0e-4
+  repeats: 5
+  token_chunk_size: 8192
+ood:
+  method: tukey_lower_fence
+  multiplier: 1.5
+augmentation:
+  horizontal_flip_probability: 0.5
+  vertical_flip_probability: 0.5
+  rotation_90: true
+  brightness: 0.1
+  contrast: 0.1
+
