@@ -63,7 +63,7 @@ def _encoder_validation_loss(model, loader, device):
 def train_encoder(train_rows, val_rows, cfg, device, out_dir, class_names):
     model = EncoderPretrainingModel(
         len(class_names), pretrained=cfg["model"]["pretrained"],
-        encoder_checkpoint=cfg["model"].get("protocec_checkpoint"),
+        encoder_checkpoint=None,
         eas_hidden=cfg["model"]["eas_hidden_dim"]).to(device)
     optimizer = torch.optim.AdamW([
         {"params": model.encoder.parameters(), "lr": cfg["train"]["backbone_lr"]},
@@ -315,9 +315,6 @@ def tukey_lower_fence(values, multiplier=1.5):
 def run_experiment(cfg, experiment, device):
     if cfg["project"].get("mode") != "full":
         raise ValueError("Paper.pdf defines full dual-prototype TRACE only")
-    protocec = cfg["model"].get("protocec_checkpoint")
-    if not protocec or not Path(protocec).is_file():
-        raise FileNotFoundError("Full TRACE training requires a provenance-bearing ProtoCEC checkpoint")
     seed = int(cfg["data"]["cv_seed"]) + int(str(experiment).replace("fold", "")) - 1
     seed_everything(seed)
     output=Path(cfg["project"]["output_dir"]); split_dir=output/"splits"/experiment; out=ensure_dir(output/"experiments"/experiment)
@@ -351,7 +348,9 @@ def run_experiment(cfg, experiment, device):
         pathology_prototypes=extract_pathology_prototypes(encoder,train_rows,cfg,device,out,len(class_names),seed)
     model,graph_state=train_graph(encoder,pathology_prototypes,biomarker_prototypes,biomarker_anchors,
                                   train_rows,val_rows,cfg,device,out,class_names)
-    coverage = _collect_coverage(model, _loader(train_rows, cfg), device)
+    # Paper Eq. (6): calibrate the Tukey lower fence on CEData-A ID
+    # validation coverage, never on training or OOD-test samples.
+    coverage = _collect_coverage(model, _loader(val_rows, cfg), device)
     threshold=tukey_lower_fence(coverage,cfg["ood"]["multiplier"]); model.set_ood_threshold(threshold)
     result={"experiment":experiment,"seed":seed,"mode":"TRACE-Full",
             "ood_threshold":threshold,"train_count":len(train_rows),

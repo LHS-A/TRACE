@@ -9,7 +9,7 @@ def load_config(path):
         cfg = yaml.safe_load(f)
     base = path.parent.parent
     for section, key in (("data", "root"), ("project", "output_dir"),
-                         ("data", "biomarker_csv"), ("model", "protocec_checkpoint")):
+                         ("data", "biomarker_csv")):
         if cfg[section].get(key) is None:
             continue
         value = Path(cfg[section][key])

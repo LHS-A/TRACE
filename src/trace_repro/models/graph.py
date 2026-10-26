@@ -29,23 +29,35 @@ class GraphTopology:
 
 
 def _mutual_cross_class_nearest(vectors, owners, metric="cosine"):
-    vectors = np.asarray(vectors, dtype=np.float64); owners = np.asarray(owners)
+    """Find MNNs independently for every pair of distinct diseases.
+
+    A prototype may therefore connect to one mutually nearest prototype in
+    each other disease, as required by the population graph construction.
+    """
+    vectors = np.asarray(vectors, dtype=np.float64)
+    owners = np.asarray(owners)
     if metric == "cosine":
-        vectors /= np.maximum(np.linalg.norm(vectors, axis=1, keepdims=True), 1e-12)
-        score = vectors.dot(vectors.T)
-        np.fill_diagonal(score, -np.inf)
-        score[owners[:, None] == owners[None, :]] = -np.inf
-        nearest = score.argmax(axis=1)
-    elif metric == "euclidean":
-        score = ((vectors[:, None] - vectors[None, :]) ** 2).sum(-1)
-        np.fill_diagonal(score, np.inf)
-        score[owners[:, None] == owners[None, :]] = np.inf
-        nearest = score.argmin(axis=1)
-    else:
+        vectors = vectors / np.maximum(np.linalg.norm(vectors, axis=1, keepdims=True), 1e-12)
+    elif metric != "euclidean":
         raise ValueError("Unknown MNN metric: {}".format(metric))
+
     pairs = []
-    for i, j in enumerate(nearest):
-        if nearest[j] == i and i < j: pairs.append((i, int(j)))
+    diseases = np.unique(owners)
+    for position, disease_a in enumerate(diseases):
+        indices_a = np.flatnonzero(owners == disease_a)
+        for disease_b in diseases[position + 1:]:
+            indices_b = np.flatnonzero(owners == disease_b)
+            if metric == "cosine":
+                score = vectors[indices_a].dot(vectors[indices_b].T)
+                nearest_b = score.argmax(axis=1)
+                nearest_a = score.argmax(axis=0)
+            else:
+                distance = ((vectors[indices_a, None] - vectors[None, indices_b]) ** 2).sum(-1)
+                nearest_b = distance.argmin(axis=1)
+                nearest_a = distance.argmin(axis=0)
+            for local_a, local_b in enumerate(nearest_b):
+                if nearest_a[local_b] == local_a:
+                    pairs.append((int(indices_a[local_a]), int(indices_b[local_b])))
     return pairs
 
 

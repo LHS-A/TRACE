@@ -37,13 +37,13 @@ def _build_resnet50(pretrained=True, checkpoint=None):
     if checkpoint is not None:
         checkpoint = Path(checkpoint)
         if not checkpoint.is_file():
-            raise FileNotFoundError("ProtoCEC encoder checkpoint not found: {}".format(checkpoint))
+            raise FileNotFoundError("Encoder checkpoint not found: {}".format(checkpoint))
         state = _unwrap_state_dict(torch.load(str(checkpoint), map_location="cpu"))
         compatible = {k: v for k, v in state.items() if k in model.state_dict() and model.state_dict()[k].shape == v.shape}
         required = ["conv1.weight", "layer1.0.conv1.weight", "layer2.0.conv1.weight", "layer3.0.conv1.weight"]
         missing_required = [k for k in required if k not in compatible]
         if missing_required:
-            raise RuntimeError("Checkpoint is not a ProtoCEC ResNet-50 encoder; missing {}".format(missing_required))
+            raise RuntimeError("Checkpoint is not a compatible ResNet-50 encoder; missing {}".format(missing_required))
         model.load_state_dict(compatible, strict=False)
     elif pretrained:
         candidates = [

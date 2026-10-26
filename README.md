@@ -4,7 +4,7 @@ Official PyTorch implementation of TRACE, a dual-prototype heterogeneous graph f
 
 ## Pipeline
 
-1. A shared ProtoCEC-initialized ResNet-50 encoder extracts global descriptors and local tokens.
+1. A shared ImageNet-initialized ResNet-50 encoder extracts global descriptors and local tokens from `layer3`.
 2. The evidence attention scorer weights local pathological evidence.
 3. Per-class biomarker prototypes (`K_b=8`) are built with PAM k-medoids and matched to visual descriptors.
 4. Per-class pathology prototypes (`K_p=10`) are learned with attention-weighted spherical k-means.
@@ -17,7 +17,7 @@ Official PyTorch implementation of TRACE, a dual-prototype heterogeneous graph f
 pip install -r requirements.txt
 ```
 
-Set `data.biomarker_csv` and `model.protocec_checkpoint` in `configs/trace.yaml`. The biomarker CSV must contain `path` (or `relative_path`), `patient_id`, `CD`, `AVG`, `SD`, `CV`, `MAX`, and `6A`. Images are arranged as:
+Set `data.biomarker_csv` in `configs/trace.yaml`. The CSV contains the measurements produced by frozen ProtoCEC offline on the training data and must provide `path` (or `relative_path`), `patient_id`, `CD`, `AVG`, `SD`, `CV`, `MAX`, and `6A`. ProtoCEC is not used to initialize or run the TRACE encoder. Images are arranged as:
 
 ```text
 Dataset/{BK,CE,FECD,HC,ICE,PPCD}/*

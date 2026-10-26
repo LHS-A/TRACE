@@ -17,8 +17,6 @@ data:
   num_folds: 5
 model:
   pretrained: true
-  # Required ResNet-50-compatible encoder initialization from ProtoCEC.
-  protocec_checkpoint: null
   feature_dim: 1024
   eas_hidden_dim: 256
   pathology_prototypes_per_class: 10

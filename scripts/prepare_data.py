@@ -23,9 +23,6 @@ def main():
         raise ValueError("Paper.pdf specifies full dual-prototype TRACE; project.mode must be full")
     records = attach_biomarkers(records, cfg["data"].get("biomarker_csv"), cfg["data"]["root"],
                                 cfg["data"].get("patient_id_column", "patient_id"))
-    protocec = cfg["model"].get("protocec_checkpoint")
-    if not protocec or not Path(protocec).is_file():
-        raise FileNotFoundError("Full TRACE requires model.protocec_checkpoint")
     output = Path(cfg["project"]["output_dir"]); ensure_dir(output / "splits")
     audit["excluded_classes"] = cfg["data"]["excluded_classes"]
     audit["included_classes"] = sorted(cfg["data"]["included_classes"])
