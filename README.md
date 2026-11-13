@@ -1,7 +1,7 @@
 # TRACE
 
 Official PyTorch implementation of TRACE, a dual-prototype heterogeneous graph framework for six-class corneal endothelial disease recognition and out-of-distribution rejection.
-
+The CED dataset is publicly available on Zenodo at \url{https://doi.org/10.5281/zenodo.23540380}.
 ## Pipeline
 
 1. A shared ImageNet-initialized ResNet-50 encoder extracts global descriptors and local tokens from `layer3`.
